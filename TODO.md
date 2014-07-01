@@ -1,0 +1,1 @@
+1. Consider adapting ideas from https://github.com/vitoshka/ac-math

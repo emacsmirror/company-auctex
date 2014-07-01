@@ -1,10 +1,10 @@
-;;; auto-complete-auctex.el --- auto-completion for auctex
+;;; company-auctex.el --- Company-mode auto-completion for AUCTeX
 
-;; Copyright (C) 2012 Christopher Monsanto
-     
-;; Author: Christopher Monsanto <chris@monsan.to>
-;; Version: 1.0
-;; Package-Requires: ((yasnippet "0.6.1") (auto-complete "1.4"))
+;; Copyright (C) 2012 Christopher Monsanto, 2014 Alexey Romanov
+
+;; Author: Christopher Monsanto <chris@monsan.to>, Alexey Romanov <alexey.v.romanov@gmail.com>
+;; Version: 0.1
+;; Package-Requires: ((yasnippet "0.6.1") (company-mode "0.8.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 ;;; Commentary:
 
-;; You can install this by (require 'auto-complete-auctex).
+;; You can install this by (require 'company-auctex).
 ;; Feel free to contribute better documentation!
 
 ;;; Code:
@@ -30,10 +30,10 @@
 (require 'latex)
 
 (eval-when-compile
-  (require 'auto-complete)
+  (require 'company)
   (require 'yasnippet))
 
-(defvar ac-auctex-arg-lookup-table
+(defvar company-auctex-arg-lookup-table
   '((TeX-arg-define-macro . ("\\MacroName"))
     (TeX-arg-counter . ("Counter"))
     (TeX-arg-define-counter . ("\\CounterName"))
@@ -71,19 +71,19 @@
     (9 . ("" "" "" "" "" "" "" "" "")))
   "Anything not in this table defaults to '(\"\")")
 
-(defun ac-auctex-expand-arg-info (arg-info)
+(defun company-auctex-expand-arg-info (arg-info)
   (loop for item in arg-info
 	append (cond
 		((or (stringp item) (and (vectorp item) (stringp (elt item 0))))
 		 (list item))
 		((vectorp item)
 		 (loop for item-2 in (or (assoc-default (or (car-safe (elt item 0)) (elt item 0))
-							ac-auctex-arg-lookup-table 'equal) '(""))
+							company-auctex-arg-lookup-table 'equal) '(""))
 		       collect [item-2]))
 		(t
-		 (or (assoc-default (or (car-safe item) item) ac-auctex-arg-lookup-table) '(""))))))
+		 (or (assoc-default (or (car-safe item) item) company-auctex-arg-lookup-table) '(""))))))
 
-(defun ac-auctex-snippet-arg (n arg)
+(defun company-auctex-snippet-arg (n arg)
   (let* ((opt (vectorp arg))
 	 (item (if opt (elt arg 0) arg))
 	 (m (if (vectorp arg) (1+ n) n))
@@ -96,31 +96,31 @@
 ;; Macros
 ;;
 
-(defun ac-auctex-expand-args (str env)
-  (yas/expand-snippet (ac-auctex-macro-snippet (assoc-default str env))))
+(defun company-auctex-expand-args (str env)
+  (yas/expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
 
-(defun ac-auctex-macro-snippet (arg-info)
+(defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
-    (apply 'concat (loop for item in (ac-auctex-expand-arg-info arg-info)
+    (apply 'concat (loop for item in (company-auctex-expand-arg-info arg-info)
 			 collect (destructuring-bind (n val)
-				     (ac-auctex-snippet-arg count item)
+				     (company-auctex-snippet-arg count item)
 				   (setq count n)
 				   val)))))
 
-(defun ac-auctex-macro-candidates ()
+(defun company-auctex-macro-candidates ()
    (let ((comlist (if TeX-symbol-list
 		      (mapcar (lambda (item)
 			        (or (car-safe (car item)) (car item)))
 			    TeX-symbol-list))))
     (all-completions ac-prefix comlist)))
 
-(defun ac-auctex-macro-action ()
-  (yas/expand-snippet (ac-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))) 
+(defun company-auctex-macro-action ()
+  (yas/expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
 
 (ac-define-source auctex-macros
   '((init . TeX-symbol-list)
-    (candidates . ac-auctex-macro-candidates)
-    (action . ac-auctex-macro-action)
+    (candidates . company-auctex-macro-candidates)
+    (action . company-auctex-macro-action)
     (requires . 0)
     (symbol . "m")
     (prefix . "\\\\\\([a-zA-Z]*\\)\\=")))
@@ -128,21 +128,21 @@
 ;; Symbols
 ;;
 
-(defun ac-auctex-symbol-candidates ()
+(defun company-auctex-symbol-candidates ()
   (all-completions ac-prefix (mapcar 'cadr LaTeX-math-default)))
 
-(defun ac-auctex-symbol-action ()
+(defun company-auctex-symbol-action ()
   (re-search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (if (texmathp)
       (progn
 	(insert "\\" candidate)
-	(yas/expand-snippet (ac-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
+	(yas/expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
     (insert "$\\" candidate "$")
     (backward-char)
-    (yas/expand-snippet (ac-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))))
+    (yas/expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))))
 
-(defun ac-auctex-symbol-document (c)
+(defun company-auctex-symbol-document (c)
   (let* ((cl (assoc c (mapcar 'cdr LaTeX-math-default)))
          (decode (if (nth 2 cl) (char-to-string (decode-char 'ucs (nth 2 cl))) ""))
          (st (nth 1 cl))
@@ -151,9 +151,9 @@
 
 (ac-define-source auctex-symbols
   '((init . LaTeX-math-mode)
-    (candidates . ac-auctex-symbol-candidates)
-    (document . ac-auctex-symbol-document)
-    (action . ac-auctex-symbol-action)
+    (candidates . company-auctex-symbol-candidates)
+    (document . company-auctex-symbol-document)
+    (action . company-auctex-symbol-action)
     (requires . 0)
     (symbol . "s")
     (prefix . "\\\\\\([a-zA-Z]*\\)\\=")))
@@ -163,26 +163,26 @@
 ;;
 
 
-(defvar ac-auctex-environment-prefix "beg")
+(defvar company-auctex-environment-prefix "beg")
 
-(defun ac-auctex-environment-candidates ()
-  (let ((envlist (mapcar (lambda (item) (concat ac-auctex-environment-prefix (car item)))
+(defun company-auctex-environment-candidates ()
+  (let ((envlist (mapcar (lambda (item) (concat company-auctex-environment-prefix (car item)))
 			 LaTeX-environment-list)))
     (all-completions ac-prefix envlist)))
 
-(defun ac-auctex-environment-action ()
+(defun company-auctex-environment-action ()
   (re-search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
-  (let ((candidate (substring candidate (length ac-auctex-environment-prefix))))
+  (let ((candidate (substring candidate (length company-auctex-environment-prefix))))
     (yas/expand-snippet (format "\\begin{%s}%s\n$0\n\\end{%s}"
 				candidate
-				(ac-auctex-macro-snippet (assoc-default candidate LaTeX-environment-list))
-				candidate)))) 
+				(company-auctex-macro-snippet (assoc-default candidate LaTeX-environment-list))
+				candidate))))
 
 (ac-define-source auctex-environments
   '((init . LaTeX-environment-list)
-    (candidates . ac-auctex-environment-candidates)
-    (action .  ac-auctex-environment-action)
+    (candidates . company-auctex-environment-candidates)
+    (action .  company-auctex-environment-action)
     (requires . 0)
     (symbol . "e")
     (prefix . "\\\\\\([a-zA-Z]*\\)\\=")))
@@ -192,26 +192,26 @@
 ;;
 
 
-(defun ac-auctex-label-candidates ()
+(defun company-auctex-label-candidates ()
   (all-completions ac-prefix (mapcar 'car LaTeX-label-list)))
 
 (ac-define-source auctex-labels
   '((init . LaTeX-label-list)
-    (candidates . ac-auctex-label-candidates)
+    (candidates . company-auctex-label-candidates)
     (requires . 0)
     (symbol . "r")
     (prefix . "\\\\ref{\\([^}]*\\)\\=")))
 
 
 ;; Bibs
-;;  
+;;
 
-(defun ac-auctex-bib-candidates ()
+(defun company-auctex-bib-candidates ()
   (all-completions ac-prefix (mapcar 'car LaTeX-bibitem-list)))
 
 (ac-define-source auctex-bibs
   `((init . LaTeX-bibitem-list)
-    (candidates . ac-auctex-bib-candidates)
+    (candidates . company-auctex-bib-candidates)
     (requires . 0)
     (symbol . "b")
     (prefix . ,(concat "\\\\cite"
@@ -225,7 +225,7 @@
 ;;
 
 
-(defun ac-auctex-setup ()
+(defun company-auctex-setup ()
   (setq ac-sources (append
                       '(ac-source-auctex-symbols
                         ac-source-auctex-macros
@@ -234,10 +234,8 @@
 			ac-source-auctex-bibs)
                       ac-sources)))
 
-(add-to-list 'ac-modes 'latex-mode)
-(add-hook 'LaTeX-mode-hook 'ac-auctex-setup)
+(add-hook 'LaTeX-mode-hook 'company-auctex-setup)
 
-(provide 'auto-complete-auctex)
+(provide 'company-auctex)
 
-;;; auto-complete-auctex.el ends here
-
+;;; company-auctex.el ends here
