@@ -4,7 +4,7 @@
 
 ;; Author: Christopher Monsanto <chris@monsan.to>, Alexey Romanov <alexey.v.romanov@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((yasnippet "0.6.1") (company-mode "0.8.0"))
+;; Package-Requires: ((yasnippet "0.8.0") (company-mode "0.8.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -93,6 +93,11 @@
               (concat (format "${[") var "]}")
             (concat "{" var "}")))))
 
+(defun company-auctex-prefix (regexp)
+  "Returns the prefix for matching given REGEXP."
+  (and (derived-mode-p 'latex-mode) (company-grab regexp 1)))
+
+
 ;; Macros
 ;;
 
@@ -107,31 +112,36 @@
                                    (setq count n)
                                    val)))))
 
-(defun company-auctex-macro-candidates ()
+(defun company-auctex-macro-candidates (prefix)
    (let ((comlist (if TeX-symbol-list
                       (mapcar (lambda (item)
                                 (or (car-safe (car item)) (car item)))
                             TeX-symbol-list))))
-    (all-completions ac-prefix comlist)))
+    (all-completions prefix comlist)))
 
-(defun company-auctex-macro-action ()
+(defun company-auctex-macro-post-completion (candidate)
   (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
 
-(ac-define-source auctex-macros
-  '((init . TeX-symbol-list)
-    (candidates . company-auctex-macro-candidates)
-    (action . company-auctex-macro-action)
-    (requires . 0)
-    (symbol . "m")
-    (prefix . "\\\\\\([a-zA-Z]*\\)\\=")))
+(defun company-auctex-macros (command &optional arg &rest ignored)
+  "company-auctex-macros backend"
+  (interactive (list 'interactive))
+  (case command
+    (interactive (company-begin-backend 'company-auctex-macros))
+    (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
+    (candidates (company-auctex-macro-candidates arg))
+    (post-completion (company-auctex-macro-post-completion arg))
+    ;;    (meta (company-auctex-meta arg))
+    ;;    (annotation (company-auctex-annotation arg))
+    ))
+
 
 ;; Symbols
 ;;
 
-(defun company-auctex-symbol-candidates ()
-  (all-completions ac-prefix (mapcar 'cadr LaTeX-math-default)))
+(defun company-auctex-symbol-candidates (prefix)
+  (all-completions prefix (mapcar 'cadr LaTeX-math-default)))
 
-(defun company-auctex-symbol-action ()
+(defun company-auctex-symbol-post-completion (candidate)
   (re-search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (if (texmathp)
@@ -149,28 +159,30 @@
          (hs (if (listp st) (mapconcat 'identity st " ") st)))
     (and decode (concat hs " == " decode))))
 
-(ac-define-source auctex-symbols
-  '((init . LaTeX-math-mode)
-    (candidates . company-auctex-symbol-candidates)
-    (document . company-auctex-symbol-document)
-    (action . company-auctex-symbol-action)
-    (requires . 0)
-    (symbol . "s")
-    (prefix . "\\\\\\([a-zA-Z]*\\)\\=")))
+(defun company-auctex-symbols (command &optional arg &rest ignored)
+  "company-auctex-symbols backend"
+  (interactive (list 'interactive))
+  (case command
+    (interactive (company-begin-backend 'company-auctex-symbols))
+    (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
+    (candidates (company-auctex-symbol-candidates arg))
+    (post-completion (company-auctex-symbol-post-completion arg))
+    ;;    (meta (company-auctex-meta arg))
+    ;;    (annotation (company-auctex-annotation arg))
+    ))
 
 
 ;; Environments
 ;;
 
-
 (defvar company-auctex-environment-prefix "beg")
 
-(defun company-auctex-environment-candidates ()
+(defun company-auctex-environment-candidates (prefix)
   (let ((envlist (mapcar (lambda (item) (concat company-auctex-environment-prefix (car item)))
                          LaTeX-environment-list)))
-    (all-completions ac-prefix envlist)))
+    (all-completions prefix envlist)))
 
-(defun company-auctex-environment-action ()
+(defun company-auctex-environment-post-completion (candidate)
   (re-search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (let ((candidate (substring candidate (length company-auctex-environment-prefix))))
@@ -179,62 +191,65 @@
                                 (company-auctex-macro-snippet (assoc-default candidate LaTeX-environment-list))
                                 candidate))))
 
-(ac-define-source auctex-environments
-  '((init . LaTeX-environment-list)
-    (candidates . company-auctex-environment-candidates)
-    (action .  company-auctex-environment-action)
-    (requires . 0)
-    (symbol . "e")
-    (prefix . "\\\\\\([a-zA-Z]*\\)\\=")))
+(defun company-auctex-environments (command &optional arg &rest ignored)
+  "company-auctex-environments backend"
+  (interactive (list 'interactive))
+  (case command
+    (interactive (company-begin-backend 'company-auctex-environments))
+    (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
+    (candidates (company-auctex-environment-candidates arg))
+    (post-completion (company-auctex-environment-post-completion arg))
+    ;;    (meta (company-auctex-meta arg))
+    ;;    (annotation (company-auctex-annotation arg))
+    ))
 
 
 ;; Refs
 ;;
 
+(defun company-auctex-label-candidates (prefix)
+  (all-completions prefix (mapcar 'car LaTeX-label-list)))
 
-(defun company-auctex-label-candidates ()
-  (all-completions ac-prefix (mapcar 'car LaTeX-label-list)))
-
-(ac-define-source auctex-labels
-  '((init . LaTeX-label-list)
-    (candidates . company-auctex-label-candidates)
-    (requires . 0)
-    (symbol . "r")
-    (prefix . "\\\\ref{\\([^}]*\\)\\=")))
+(defun company-auctex-labels (command &optional arg &rest ignored)
+  "company-auctex-labels backend"
+  (interactive (list 'interactive))
+  (case command
+    (interactive (company-begin-backend 'company-auctex-labels))
+    (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
+    (candidates (company-auctex-label-candidates arg))
+    ;;    (meta (company-auctex-meta arg))
+    ;;    (annotation (company-auctex-annotation arg))
+    ))
 
 
 ;; Bibs
 ;;
 
-(defun company-auctex-bib-candidates ()
-  (all-completions ac-prefix (mapcar 'car LaTeX-bibitem-list)))
+(defun company-auctex-bib-candidates (prefix)
+  (all-completions prefix (mapcar 'car LaTeX-bibitem-list)))
 
-(ac-define-source auctex-bibs
-  `((init . LaTeX-bibitem-list)
-    (candidates . company-auctex-bib-candidates)
-    (requires . 0)
-    (symbol . "b")
-    (prefix . ,(concat "\\\\cite"
-                       "\\(?:"
-                         "\\[[^]]*\\]"
-                       "\\)?"
-                       "{\\([^},]*\\)"
-                       "\\="))))
+(defun company-auctex-bibs (command &optional arg &rest ignored)
+  "company-auctex-bibs backend"
+  (interactive (list 'interactive))
+  (case command
+    (interactive (company-begin-backend 'company-auctex-bibs))
+    (prefix (company-auctex-prefix "\\\\cite\\(?:\\[[^]]*\\]\\){\\([^},]*\\)\\="))
+    (candidates (company-auctex-bib-candidates arg))
+    ;;    (meta (company-auctex-meta arg))
+    ;;    (annotation (company-auctex-annotation arg))
+    ))
 
-;; Setup
+
+;; All together
 ;;
 
-
-(defun company-auctex-setup ()
-  (setq ac-sources (append
-                      '(ac-source-auctex-symbols
-                        ac-source-auctex-macros
-                        ac-source-auctex-environments
-                        ac-source-auctex-labels
-                        ac-source-auctex-bibs)
-                      ac-sources)))
-
-(add-hook 'LaTeX-mode-hook 'company-auctex-setup)
+(defvar company-auctex
+  '(company-auctex-macros
+    company-auctex-symbols
+    company-auctex-environments
+    company-auctex-labels
+    company-auctex-bibs)
+  "Grouped company-auctex backends.")
 
 (provide 'company-auctex)
 
