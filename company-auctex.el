@@ -21,7 +21,8 @@
 
 ;;; Commentary:
 
-;; You can install this by (require 'company-auctex).
+;; You can install this by (require 'company-auctex) and add to company-backends
+;; with (push company-auctex company-backends).
 ;; Feel free to contribute better documentation!
 
 ;;; Code:
@@ -241,16 +242,15 @@
     ))
 
 
-;; All together
+;; Merged backend
 ;;
 
-(defvar company-auctex
+(setq company-auctex
   '(company-auctex-macros
     company-auctex-symbols
     company-auctex-environments
     company-auctex-labels
-    company-auctex-bibs)
-  "Grouped company-auctex backends.")
+    company-auctex-bibs))
 
 (provide 'company-auctex)
 
