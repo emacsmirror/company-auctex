@@ -72,26 +72,31 @@
     (9 . ("" "" "" "" "" "" "" "" "")))
   "Anything not in this table defaults to '(\"\")")
 
+(defun company-auctex-lookup-arg (item)
+  (or (assoc-default (or (car-safe item)
+                         item)
+                     company-auctex-arg-lookup-table)
+      '("")))
+
 (defun company-auctex-expand-arg-info (arg-info)
   (loop for item in arg-info
         append (cond
                 ((or (stringp item) (and (vectorp item) (stringp (elt item 0))))
                  (list item))
                 ((vectorp item)
-                 (loop for item-2 in (or (assoc-default (or (car-safe (elt item 0)) (elt item 0))
-                                                        company-auctex-arg-lookup-table 'equal) '(""))
+                 (loop for item-2 in (company-auctex-lookup-arg (elt item 0))
                        collect [item-2]))
                 (t
-                 (or (assoc-default (or (car-safe item) item) company-auctex-arg-lookup-table) '(""))))))
+                 (company-auctex-lookup-arg item)))))
 
 (defun company-auctex-snippet-arg (n arg)
   (let* ((opt (vectorp arg))
          (item (if opt (elt arg 0) arg))
-         (m (if (vectorp arg) (1+ n) n))
+         (m (if opt (1+ n) n))
          (var (format "${%s}" item)))
     (list (1+ m)
           (if opt
-              (concat (format "${[") var "]}")
+              (concat "${[" var "]}")
             (concat "{" var "}")))))
 
 ;; TODO trying to return cons with t doesn't work for labels
