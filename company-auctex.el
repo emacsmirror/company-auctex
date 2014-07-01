@@ -120,14 +120,13 @@
                                    val)))))
 
 (defun company-auctex-macro-candidates (prefix)
-   (let ((comlist (if TeX-symbol-list
-                      (mapcar (lambda (item)
-                                (or (car-safe (car item)) (car item)))
-                            TeX-symbol-list))))
+   (let ((comlist (mapcar (lambda (item)
+                            (or (car-safe (car item)) (car item)))
+                          (TeX-symbol-list))))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
-  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
+  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))
 
 (defun company-auctex-macros (command &optional arg &rest ignored)
   "company-auctex-macros backend"
@@ -157,10 +156,10 @@
   (if (texmathp)
       (progn
         (insert "\\" candidate)
-        (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
+        (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))
     (insert "$\\" candidate "$")
     (backward-char)
-    (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))))
+    (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list))))))
 
 (defun company-auctex-symbol-annotation (candidate)
   (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
