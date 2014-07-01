@@ -138,8 +138,11 @@
 ;; Symbols
 ;;
 
+(defun company-auctex-math-all ()
+  (append LaTeX-math-list LaTeX-math-default))
+
 (defun company-auctex-symbol-candidates (prefix)
-  (all-completions prefix (mapcar 'cadr LaTeX-math-default)))
+  (all-completions prefix (mapcar 'cadr (company-auctex-math-all))))
 
 (defun company-auctex-symbol-post-completion (candidate)
   (re-search-backward candidate)
@@ -152,12 +155,9 @@
     (backward-char)
     (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))))
 
-(defun company-auctex-symbol-document (c)
-  (let* ((cl (assoc c (mapcar 'cdr LaTeX-math-default)))
-         (decode (if (nth 2 cl) (char-to-string (decode-char 'ucs (nth 2 cl))) ""))
-         (st (nth 1 cl))
-         (hs (if (listp st) (mapconcat 'identity st " ") st)))
-    (and decode (concat hs " == " decode))))
+(defun company-auctex-symbol-annotation (candidate)
+  (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
+        (if char (concat " " (char-to-string (decode-char 'ucs char))) nil)))
 
 (defun company-auctex-symbols (command &optional arg &rest ignored)
   "company-auctex-symbols backend"
@@ -168,7 +168,7 @@
     (candidates (company-auctex-symbol-candidates arg))
     (post-completion (company-auctex-symbol-post-completion arg))
     ;;    (meta (company-auctex-meta arg))
-    ;;    (annotation (company-auctex-annotation arg))
+    (annotation (company-auctex-symbol-annotation arg))
     ))
 
 
