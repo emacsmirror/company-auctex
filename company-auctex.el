@@ -215,7 +215,7 @@
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-auctex-labels))
-    (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
+    (prefix (company-auctex-prefix "\\\\ref{\\([^}]*\\)\\="))
     (candidates (company-auctex-label-candidates arg))
     ;;    (meta (company-auctex-meta arg))
     ;;    (annotation (company-auctex-annotation arg))
