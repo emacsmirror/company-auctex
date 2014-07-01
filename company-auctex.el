@@ -97,7 +97,7 @@
 ;;
 
 (defun company-auctex-expand-args (str env)
-  (yas/expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
+  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
 
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
@@ -115,7 +115,7 @@
     (all-completions ac-prefix comlist)))
 
 (defun company-auctex-macro-action ()
-  (yas/expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
+  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
 
 (ac-define-source auctex-macros
   '((init . TeX-symbol-list)
@@ -137,10 +137,10 @@
   (if (texmathp)
       (progn
         (insert "\\" candidate)
-        (yas/expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
+        (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list))))
     (insert "$\\" candidate "$")
     (backward-char)
-    (yas/expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))))
+    (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate TeX-symbol-list)))))
 
 (defun company-auctex-symbol-document (c)
   (let* ((cl (assoc c (mapcar 'cdr LaTeX-math-default)))
@@ -174,7 +174,7 @@
   (re-search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (let ((candidate (substring candidate (length company-auctex-environment-prefix))))
-    (yas/expand-snippet (format "\\begin{%s}%s\n$0\n\\end{%s}"
+    (yas-expand-snippet (format "\\begin{%s}%s\n$0\n\\end{%s}"
                                 candidate
                                 (company-auctex-macro-snippet (assoc-default candidate LaTeX-environment-list))
                                 candidate))))
