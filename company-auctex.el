@@ -179,7 +179,7 @@
 
 (defun company-auctex-environment-candidates (prefix)
   (let ((envlist (mapcar (lambda (item) (concat company-auctex-environment-prefix (car item)))
-                         LaTeX-environment-list)))
+                         (LaTeX-environment-list))))
     (all-completions prefix envlist)))
 
 (defun company-auctex-environment-post-completion (candidate)
@@ -188,7 +188,7 @@
   (let ((candidate (substring candidate (length company-auctex-environment-prefix))))
     (yas-expand-snippet (format "\\begin{%s}%s\n$0\n\\end{%s}"
                                 candidate
-                                (company-auctex-macro-snippet (assoc-default candidate LaTeX-environment-list))
+                                (company-auctex-macro-snippet (assoc-default candidate (LaTeX-environment-list)))
                                 candidate))))
 
 (defun company-auctex-environments (command &optional arg &rest ignored)
@@ -208,7 +208,7 @@
 ;;
 
 (defun company-auctex-label-candidates (prefix)
-  (all-completions prefix (mapcar 'car LaTeX-label-list)))
+  (all-completions prefix (mapcar 'car (LaTeX-label-list))))
 
 (defun company-auctex-labels (command &optional arg &rest ignored)
   "company-auctex-labels backend"
@@ -226,7 +226,7 @@
 ;;
 
 (defun company-auctex-bib-candidates (prefix)
-  (all-completions prefix (mapcar 'car LaTeX-bibitem-list)))
+  (all-completions prefix (mapcar 'car (LaTeX-bibitem-list))))
 
 (defun company-auctex-bibs (command &optional arg &rest ignored)
   "company-auctex-bibs backend"
