@@ -93,6 +93,7 @@
               (concat (format "${[") var "]}")
             (concat "{" var "}")))))
 
+;; TODO trying to return cons with t doesn't work for labels
 (defun company-auctex-prefix (regexp)
   "Returns the prefix for matching given REGEXP."
   (and (derived-mode-p 'latex-mode) (company-grab regexp 1)))
