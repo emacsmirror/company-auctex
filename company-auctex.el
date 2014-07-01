@@ -99,10 +99,12 @@
               (concat "${[" var "]}")
             (concat "{" var "}")))))
 
-;; TODO trying to return cons with t doesn't work for labels
 (defun company-auctex-prefix (regexp)
   "Returns the prefix for matching given REGEXP."
-  (and (derived-mode-p 'latex-mode) (company-grab regexp 1)))
+  (let ((prefix (and (derived-mode-p 'latex-mode)
+                     (when (looking-back regexp)
+                       (match-string-no-properties 1)))))
+    (if prefix (cons prefix t) nil)))
 
 
 ;; Macros
@@ -250,11 +252,11 @@
 ;;
 
 (setq company-auctex
-  '(company-auctex-macros
-    company-auctex-symbols
-    company-auctex-environments
-    company-auctex-labels
-    company-auctex-bibs))
+      '(company-auctex-labels
+        company-auctex-bibs
+        company-auctex-macros
+        company-auctex-symbols
+        company-auctex-environments))
 
 (provide 'company-auctex)
 
