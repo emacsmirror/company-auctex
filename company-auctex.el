@@ -70,7 +70,10 @@
     (7 . ("" "" "" "" "" "" ""))
     (8 . ("" "" "" "" "" "" "" ""))
     (9 . ("" "" "" "" "" "" "" "" "")))
-  "Anything not in this table defaults to '(\"\")")
+  "Anything not in this table defaults to '(\"\").")
+
+(defgroup company-auctex nil "Customization options for company-auctex."
+  :prefix "company-auctex-" :package-version '('company-auctex . "0.1"))
 
 (defun company-auctex-lookup-arg (item)
   (or (assoc-default (or (car-safe item)
@@ -159,9 +162,10 @@
       (progn
         (insert "\\" candidate)
         (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))
-    (insert "$\\" candidate "$")
-    (backward-char)
-    (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list))))))
+    (progn
+      (insert "$\\" candidate "$")
+      (backward-char)
+      (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))))
 
 (defun company-auctex-symbol-annotation (candidate)
   (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
@@ -183,7 +187,8 @@
 ;; Environments
 ;;
 
-(defvar company-auctex-environment-prefix "beg")
+(defcustom company-auctex-environment-prefix "beg"
+  "Prefix for auto-completing environments.")
 
 (defun company-auctex-environment-candidates (prefix)
   (let ((envlist (mapcar (lambda (item) (concat company-auctex-environment-prefix (car item)))
@@ -257,6 +262,8 @@
         company-auctex-macros
         company-auctex-symbols
         company-auctex-environments))
+
+
 
 (provide 'company-auctex)
 
