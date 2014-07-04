@@ -5,7 +5,7 @@
 ;; Author: Christopher Monsanto <chris@monsan.to>, Alexey Romanov <alexey.v.romanov@gmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/alexeyr/company-auctex/
-;; Package-Requires: ((yasnippet "0.8.0") (company-mode "0.8.0"))
+;; Package-Requires: ((yasnippet "0.8.0") (company "0.8.0") (auctex "11.87"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
