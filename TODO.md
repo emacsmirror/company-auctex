@@ -1,1 +1,1 @@
-1. Consider adapting ideas from https://github.com/vitoshka/ac-math
+1. Add backend which inserts Unicode in non-TeX modes (see https://github.com/vitoshka/ac-math)
