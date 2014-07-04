@@ -75,10 +75,12 @@
 (defgroup company-auctex nil "Customization options for company-auctex."
   :prefix "company-auctex-" :package-version '('company-auctex . "0.1"))
 
+(defun car-or (item)
+  "Return car of ITEM if it's a cons, ITEM otherwise."
+  (or (car-safe item) item))
+
 (defun company-auctex-lookup-arg (item)
-  (or (assoc-default (or (car-safe item)
-                         item)
-                     company-auctex-arg-lookup-table)
+  (or (assoc-default (car-or item) company-auctex-arg-lookup-table)
       '("")))
 
 (defun company-auctex-expand-arg-info (arg-info)
@@ -115,18 +117,18 @@
 
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
-    (apply 'concat (loop for item in (company-auctex-expand-arg-info arg-info)
-                         collect (destructuring-bind (n val)
-                                     (company-auctex-snippet-arg count item)
-                                   (setq count n)
-                                   val)))))
+    (apply 'concat
+           (loop for item in (company-auctex-expand-arg-info arg-info)
+                 collect (destructuring-bind (n val)
+                             (company-auctex-snippet-arg count item)
+                           (setq count n)
+                           val)))))
 
 (defun company-auctex-expand-args (str env)
   (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
 
 (defun company-auctex-macro-candidates (prefix)
-   (let ((comlist (mapcar (lambda (item)
-                            (or (car-safe (car item)) (car item)))
+   (let ((comlist (mapcar (lambda (item) (car-or (car item)))
                           (TeX-symbol-list))))
     (all-completions prefix comlist)))
 
@@ -140,10 +142,7 @@
     (interactive (company-begin-backend 'company-auctex-macros))
     (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
     (candidates (company-auctex-macro-candidates arg))
-    (post-completion (company-auctex-macro-post-completion arg))
-    ;;    (meta (company-auctex-meta arg))
-    ;;    (annotation (company-auctex-annotation arg))
-    ))
+    (post-completion (company-auctex-macro-post-completion arg))))
 
 
 ;; Symbols
@@ -179,9 +178,7 @@
     (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
     (candidates (company-auctex-symbol-candidates arg))
     (post-completion (company-auctex-symbol-post-completion arg))
-    ;;    (meta (company-auctex-meta arg))
-    (annotation (company-auctex-symbol-annotation arg))
-    ))
+    (annotation (company-auctex-symbol-annotation arg))))
 
 
 ;; Environments
@@ -217,10 +214,7 @@
     (interactive (company-begin-backend 'company-auctex-environments))
     (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
     (candidates (company-auctex-environment-candidates arg))
-    (post-completion (company-auctex-environment-post-completion arg))
-    ;;    (meta (company-auctex-meta arg))
-    ;;    (annotation (company-auctex-annotation arg))
-    ))
+    (post-completion (company-auctex-environment-post-completion arg))))
 
 
 ;; Refs
@@ -235,10 +229,7 @@
   (case command
     (interactive (company-begin-backend 'company-auctex-labels))
     (prefix (company-auctex-prefix "\\\\ref{\\([^}]*\\)\\="))
-    (candidates (company-auctex-label-candidates arg))
-    ;;    (meta (company-auctex-meta arg))
-    ;;    (annotation (company-auctex-annotation arg))
-    ))
+    (candidates (company-auctex-label-candidates arg))))
 
 
 ;; Bibs
@@ -253,10 +244,7 @@
   (case command
     (interactive (company-begin-backend 'company-auctex-bibs))
     (prefix (company-auctex-prefix "\\\\cite\\(?:\\[[^]]*\\]\\){\\([^},]*\\)\\="))
-    (candidates (company-auctex-bib-candidates arg))
-    ;;    (meta (company-auctex-meta arg))
-    ;;    (annotation (company-auctex-annotation arg))
-    ))
+    (candidates (company-auctex-bib-candidates arg))))
 
 
 ;; Merged backend
