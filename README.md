@@ -28,3 +28,5 @@ Then require the package and initialize it:
 1. Expand README (add features, screenshots).
 
 2. Support inserting Unicode characters in non-TeX modes (similar to [ac-math](https://github.com/vitoshka/ac-math)).
+
+3. Some commands (\begin, \emph, etc.) aren't getting completed. Need to check if they are in any lists provided by AUCTeX.
