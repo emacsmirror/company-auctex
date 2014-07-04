@@ -6,7 +6,7 @@ It is adapted from [auto-complete-auctex](https://github.com/monsanto/auto-compl
 
 ## Installation
 
-1. From MELPA (once it's added there):
+1. From MELPA (see http://melpa.milkbox.net/#/getting-started for enabling it, if required):
 
         M-x package-install RET company-auctex RET
 
