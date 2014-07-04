@@ -252,9 +252,9 @@
 (defun company-auctex-init ()
   "Add backends provided by company-auctex to company-backends."
   (progn
-    (push company-auctex-labels company-backends)
-    (push company-auctex-bibs company-backends)
-    (push
+    (add-to-list company-auctex-labels company-backends)
+    (add-to-list company-auctex-bibs company-backends)
+    (add-to-list
      '(company-auctex-macros company-auctex-symbols company-auctex-environments)
      company-backends)))
 
