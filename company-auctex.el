@@ -113,9 +113,6 @@
 ;; Macros
 ;;
 
-(defun company-auctex-expand-args (str env)
-  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
-
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
     (apply 'concat (loop for item in (company-auctex-expand-arg-info arg-info)
@@ -124,6 +121,9 @@
                                    (setq count n)
                                    val)))))
 
+(defun company-auctex-expand-args (str env)
+  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
+
 (defun company-auctex-macro-candidates (prefix)
    (let ((comlist (mapcar (lambda (item)
                             (or (car-safe (car item)) (car item)))
@@ -131,7 +131,7 @@
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
-  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))
+  (company-auctex-expand-args candidate (TeX-symbol-list)))
 
 (defun company-auctex-macros (command &optional arg &rest ignored)
   "company-auctex-macros backend"
@@ -161,11 +161,11 @@
   (if (texmathp)
       (progn
         (insert "\\" candidate)
-        (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))
+        (company-auctex-expand-args candidate (TeX-symbol-list)))
     (progn
       (insert "$\\" candidate "$")
       (backward-char)
-      (yas-expand-snippet (company-auctex-macro-snippet (assoc-default candidate (TeX-symbol-list)))))))
+      (company-auctex-expand-args candidate (TeX-symbol-list)))))
 
 (defun company-auctex-symbol-annotation (candidate)
   (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
@@ -191,18 +191,24 @@
   "Prefix for auto-completing environments.")
 
 (defun company-auctex-environment-candidates (prefix)
-  (let ((envlist (mapcar (lambda (item) (concat company-auctex-environment-prefix (car item)))
-                         (LaTeX-environment-list))))
+  (let
+      ((envlist
+        (mapcar (lambda (item)
+                  (concat company-auctex-environment-prefix (car item)))
+                (LaTeX-environment-list))))
     (all-completions prefix envlist)))
 
 (defun company-auctex-environment-post-completion (candidate)
   (re-search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
-  (let ((candidate (substring candidate (length company-auctex-environment-prefix))))
-    (yas-expand-snippet (format "\\begin{%s}%s\n$0\n\\end{%s}"
-                                candidate
-                                (company-auctex-macro-snippet (assoc-default candidate (LaTeX-environment-list)))
-                                candidate))))
+  (let ((candidate
+         (substring candidate (length company-auctex-environment-prefix))))
+    (yas-expand-snippet
+     (format "\\begin{%s}%s\n$0\n\\end{%s}"
+             candidate
+             (company-auctex-macro-snippet
+              (assoc-default candidate (LaTeX-environment-list)))
+             candidate))))
 
 (defun company-auctex-environments (command &optional arg &rest ignored)
   "company-auctex-environments backend"
