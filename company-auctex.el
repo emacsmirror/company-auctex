@@ -21,18 +21,17 @@
 
 ;;; Commentary:
 
-;; You can install this by (require 'company-auctex) and add to company-backends
-;; with (push company-auctex company-backends).
+;; To use:
+;; (require 'company-auctex)
+;; (company-auctex-init)
 ;; Feel free to contribute better documentation!
 
 ;;; Code:
 
 (require 'tex)
 (require 'latex)
-
-(eval-when-compile
-  (require 'company)
-  (require 'yasnippet))
+(require 'company)
+(require 'yasnippet)
 
 (defvar company-auctex-arg-lookup-table
   '((TeX-arg-define-macro . ("\\MacroName"))
@@ -250,14 +249,14 @@
 ;; Merged backend
 ;;
 
-(setq company-auctex
-      '(company-auctex-labels
-        company-auctex-bibs
-        company-auctex-macros
-        company-auctex-symbols
-        company-auctex-environments))
-
-
+(defun company-auctex-init ()
+  "Add backends provided by company-auctex to company-backends."
+  (progn
+    (push company-auctex-labels company-backends)
+    (push company-auctex-bibs company-backends)
+    (push
+     '(company-auctex-macros company-auctex-symbols company-auctex-environments)
+     company-backends)))
 
 (provide 'company-auctex)
 
