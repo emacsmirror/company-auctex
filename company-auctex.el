@@ -75,7 +75,6 @@
 (defgroup company-auctex nil
   "Completion backend for AUCTeX."
   :prefix "company-auctex-"
-  :package-version '('company-auctex . "0.1")
   :tag "Company AUCTeX"
   :group 'company)
 
