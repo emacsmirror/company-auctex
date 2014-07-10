@@ -72,8 +72,12 @@
     (9 . ("" "" "" "" "" "" "" "" "")))
   "Anything not in this table defaults to '(\"\").")
 
-(defgroup company-auctex nil "Customization options for company-auctex."
-  :prefix "company-auctex-" :package-version '('company-auctex . "0.1"))
+(defgroup company-auctex nil
+  "Completion backend for AUCTeX."
+  :prefix "company-auctex-"
+  :package-version '('company-auctex . "0.1")
+  :tag "Company AUCTeX"
+  :group 'company)
 
 (defun car-or (item)
   "Return car of ITEM if it's a cons, ITEM otherwise."
