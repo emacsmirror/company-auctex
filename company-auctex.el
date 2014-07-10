@@ -252,8 +252,8 @@
 
 (defun company-auctex-init ()
   "Add backends provided by company-auctex to company-backends."
-  (add-to-list 'company-backends company-auctex-labels)
-  (add-to-list 'company-backends company-auctex-bibs)
+  (add-to-list 'company-backends 'company-auctex-labels)
+  (add-to-list 'company-backends 'company-auctex-bibs)
   (add-to-list 'company-backends
     '(company-auctex-macros company-auctex-symbols company-auctex-environments)))
 
