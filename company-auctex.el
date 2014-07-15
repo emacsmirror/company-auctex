@@ -138,6 +138,7 @@
 (defun company-auctex-macro-post-completion (candidate)
   (company-auctex-expand-args candidate (TeX-symbol-list)))
 
+;;;###autoload
 (defun company-auctex-macros (command &optional arg &rest ignored)
   "company-auctex-macros backend"
   (interactive (list 'interactive))
@@ -173,6 +174,7 @@
   (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
         (if char (concat " " (char-to-string (decode-char 'ucs char))) nil)))
 
+;;;###autoload
 (defun company-auctex-symbols (command &optional arg &rest ignored)
   "company-auctex-symbols backend"
   (interactive (list 'interactive))
@@ -210,6 +212,7 @@
               (assoc-default candidate (LaTeX-environment-list)))
              candidate))))
 
+;;;###autoload
 (defun company-auctex-environments (command &optional arg &rest ignored)
   "company-auctex-environments backend"
   (interactive (list 'interactive))
@@ -226,6 +229,7 @@
 (defun company-auctex-label-candidates (prefix)
   (all-completions prefix (mapcar 'car (LaTeX-label-list))))
 
+;;;###autoload
 (defun company-auctex-labels (command &optional arg &rest ignored)
   "company-auctex-labels backend"
   (interactive (list 'interactive))
@@ -241,6 +245,7 @@
 (defun company-auctex-bib-candidates (prefix)
   (all-completions prefix (mapcar 'car (LaTeX-bibitem-list))))
 
+;;;###autoload
 (defun company-auctex-bibs (command &optional arg &rest ignored)
   "company-auctex-bibs backend"
   (interactive (list 'interactive))
@@ -253,6 +258,7 @@
 ;; Merged backend
 ;;
 
+;;;###autoload
 (defun company-auctex-init ()
   "Add backends provided by company-auctex to company-backends."
   (add-to-list 'company-backends 'company-auctex-labels)

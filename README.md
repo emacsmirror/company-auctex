@@ -17,10 +17,10 @@ It is adapted from [auto-complete-auctex](https://github.com/monsanto/auto-compl
   In the initialization file (`~/.emacs`, `~/.emacs.d/init.el`, etc.):
 
         (add-to-list 'load-path "path/to/company-auctex.el")
+        (require 'company-auctex)
 
 Then require the package and initialize it:
 
-    (require 'company-auctex)
     (company-auctex-init)
 
 ## To-do
