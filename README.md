@@ -22,6 +22,10 @@ It is adapted from [auto-complete-auctex](https://github.com/monsanto/auto-compl
 Then require the package and initialize it:
 
     (company-auctex-init)
+    
+## Issues
+
+If `company-backends` is set directly without using `push`, `add-to-list` or similar functions (e.g. by Customize interface), `(company-auctex-init)` must be run after this (or its backends added to the same place).
 
 ## To-do
 
