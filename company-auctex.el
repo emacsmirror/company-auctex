@@ -159,7 +159,7 @@
   (all-completions prefix (mapcar 'cadr (company-auctex-math-all))))
 
 (defun company-auctex-symbol-post-completion (candidate)
-  (re-search-backward (regexp-quote candidate))
+  (search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (if (texmathp)
       (progn
@@ -201,7 +201,7 @@
     (all-completions prefix envlist)))
 
 (defun company-auctex-environment-post-completion (candidate)
-  (re-search-backward (regexp-quote candidate))
+  (search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (let ((candidate
          (substring candidate (length company-auctex-environment-prefix))))
