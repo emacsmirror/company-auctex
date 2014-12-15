@@ -25,7 +25,8 @@ Then require the package and initialize it:
     
 ## Issues
 
-If `company-backends` is set directly without using `push`, `add-to-list` or similar functions (e.g. by Customize interface), `(company-auctex-init)` must be run after this (or its backends added to the same place).
+* If `company-backends` is set directly without using `push`, `add-to-list` or similar functions (e.g. by Customize interface), `(company-auctex-init)` must be run after this (or its backends added to the same place).
+* This error can happen after updating to AUCTeX 11.88: `Lisp error: (invalid-function TeX-auto-add-type)` triggered by `(require 'latex)` in `company-auctex`. It seems to be caused by something in existing configuration and can also happen without `company-auctex`. Workarounds include: downgrading to 11.87; reinstalling AUCTeX; cleaning up cruft from `custom-set-variables`. See [issue 1](https://github.com/alexeyr/company-auctex/issues/1) for more details.
 
 ## To-do
 
