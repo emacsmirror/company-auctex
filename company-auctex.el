@@ -83,8 +83,8 @@
   (or (car-safe item) item))
 
 (defun company-auctex-lookup-arg (item)
-  (or (assoc-default (car-or item) company-auctex-arg-lookup-table)
-      '("")))
+  (let ((arg (assoc (car-or item) company-auctex-arg-lookup-table)))
+    (if arg (cdr arg) '(""))))
 
 (defun company-auctex-expand-arg-info (arg-info)
   (loop for item in arg-info
@@ -97,15 +97,13 @@
                 (t
                  (company-auctex-lookup-arg item)))))
 
-(defun company-auctex-snippet-arg (n arg)
+(defun company-auctex-snippet-arg (arg)
   (let* ((opt (vectorp arg))
          (item (if opt (elt arg 0) arg))
-         (m (if opt (1+ n) n))
          (var (format "${%s}" item)))
-    (list (1+ m)
-          (if opt
-              (concat "${[" var "]}")
-            (concat "{" var "}")))))
+    (if opt
+        (concat "${[" var "]}")
+      (concat "{" var "}"))))
 
 (defun company-auctex-prefix (regexp)
   "Returns the prefix for matching given REGEXP."
@@ -122,17 +120,17 @@
   (let ((count 1))
     (apply 'concat
            (loop for item in (company-auctex-expand-arg-info arg-info)
-                 collect (destructuring-bind (n val)
-                             (company-auctex-snippet-arg count item)
-                           (setq count n)
-                           val)))))
+                 collect (company-auctex-snippet-arg item)))))
 
 (defun company-auctex-expand-args (str env)
   (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
 
 (defun company-auctex-macro-candidates (prefix)
-   (let ((comlist (mapcar (lambda (item) (car-or (car item)))
-                          (TeX-symbol-list))))
+  (let ((comlist (append
+                  (mapcar (lambda (item) (car-or (car item)))
+                          (TeX-symbol-list))
+                  (car LaTeX-length-list)
+                  )))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
