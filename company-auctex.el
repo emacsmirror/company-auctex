@@ -47,6 +47,7 @@
     (TeX-arg-ref . ("Name"))
     (TeX-arg-index . ("Index"))
     (TeX-arg-define-label . ("Label"))
+    (LaTeX-arg-section . ("Title"))
     (LaTeX-arg-usepackage . (["opt1,..."] "Package"))
     (LaTeX-env-label . nil)
     (LaTeX-amsmath-env-aligned . (["htbp!"]))
@@ -126,15 +127,18 @@
   (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
 
 (defun company-auctex-macro-candidates (prefix)
-  (let ((comlist (append
-                  (mapcar (lambda (item) (car-or (car item)))
-                          (TeX-symbol-list))
-                  (car LaTeX-length-list)
-                  )))
+  (let ((comlist (mapcar (lambda (item) (car-or (car item)))
+                         (append (TeX-symbol-list)
+                                 (LaTeX-length-list)
+                                 LaTeX-section-list))))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
-  (company-auctex-expand-args candidate (TeX-symbol-list)))
+  (company-auctex-expand-args candidate
+                              (append (TeX-symbol-list)
+                                      (mapcar (lambda (item)
+                                                (list (car item) 'LaTeX-arg-section))
+                                              LaTeX-section-list))))
 
 ;;;###autoload
 (defun company-auctex-macros (command &optional arg &rest ignored)
