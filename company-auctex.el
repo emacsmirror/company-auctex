@@ -83,8 +83,8 @@
   (or (car-safe item) item))
 
 (defun company-auctex-lookup-arg (item)
-  (or (assoc-default (car-or item) company-auctex-arg-lookup-table)
-      '("")))
+  (let ((arg (assoc (car-or item) company-auctex-arg-lookup-table)))
+    (if arg (cdr arg) '(""))))
 
 (defun company-auctex-expand-arg-info (arg-info)
   (loop for item in arg-info
