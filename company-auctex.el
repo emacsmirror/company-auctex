@@ -97,15 +97,13 @@
                 (t
                  (company-auctex-lookup-arg item)))))
 
-(defun company-auctex-snippet-arg (n arg)
+(defun company-auctex-snippet-arg (arg)
   (let* ((opt (vectorp arg))
          (item (if opt (elt arg 0) arg))
-         (m (if opt (1+ n) n))
          (var (format "${%s}" item)))
-    (list (1+ m)
-          (if opt
-              (concat "${[" var "]}")
-            (concat "{" var "}")))))
+    (if opt
+        (concat "${[" var "]}")
+      (concat "{" var "}"))))
 
 (defun company-auctex-prefix (regexp)
   "Returns the prefix for matching given REGEXP."
@@ -122,10 +120,7 @@
   (let ((count 1))
     (apply 'concat
            (loop for item in (company-auctex-expand-arg-info arg-info)
-                 collect (destructuring-bind (n val)
-                             (company-auctex-snippet-arg count item)
-                           (setq count n)
-                           val)))))
+                 collect (company-auctex-snippet-arg item)))))
 
 (defun company-auctex-expand-args (str env)
   (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
