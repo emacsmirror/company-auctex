@@ -126,8 +126,11 @@
   (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
 
 (defun company-auctex-macro-candidates (prefix)
-   (let ((comlist (mapcar (lambda (item) (car-or (car item)))
-                          (TeX-symbol-list))))
+  (let ((comlist (append
+                  (mapcar (lambda (item) (car-or (car item)))
+                          (TeX-symbol-list))
+                  (car LaTeX-length-list)
+                  )))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
