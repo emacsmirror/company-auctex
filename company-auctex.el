@@ -253,7 +253,7 @@
   (interactive (list 'interactive))
   (case command
     (interactive (company-begin-backend 'company-auctex-bibs))
-    (prefix (company-auctex-prefix "\\\\cite\\(?:\\[[^]]*\\]\\)?{\\([^},]*\\)\\="))
+    (prefix (company-auctex-prefix "\\\\cite[^[{]*\\(?:\\[[^]]*\\]\\)?{\\([^},]*\\)\\="))
     (candidates (company-auctex-bib-candidates arg))))
 
 
