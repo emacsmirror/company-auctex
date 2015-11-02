@@ -117,6 +117,30 @@
 ;; Macros
 ;;
 
+(defun company-auctex--disable-yas ()
+  (yas-minor-mode -1)
+  (remove-hook 'yas-after-exit-snippet-hook #'company-auctex--disable-yas))
+
+(defmacro company-auctex-with-yas (&rest body)
+  `(progn
+     (unless yas-minor-mode
+       (yas-minor-mode +1)
+       (add-hook 'yas-after-exit-snippet-hook #'company-auctex--disable-yas))
+     ,@body))
+
+(defun company-auctex-get-LaTeX-font-list (&optional mathp)
+  (delq nil (mapcar
+             (lambda (x)
+               (and (stringp x)
+                    (not (string-empty-p x))
+                    (not (string= x "}"))
+                    (list (substring x 1 -1) t)))
+             (delete-dups
+              (mapcar (if mathp
+                          (lambda (x) (nth 3 x))
+                        #'cadr)
+                      LaTeX-font-list)))))
+
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
     (apply 'concat
@@ -124,13 +148,15 @@
                  collect (company-auctex-snippet-arg item)))))
 
 (defun company-auctex-expand-args (str env)
-  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
+  (company-auctex-with-yas
+    (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env)))))
 
 (defun company-auctex-macro-candidates (prefix)
   (let ((comlist (mapcar (lambda (item) (car-or (car item)))
                          (append (TeX-symbol-list)
                                  (LaTeX-length-list)
-                                 LaTeX-section-list))))
+                                 LaTeX-section-list
+                                 (company-auctex-get-LaTeX-font-list)))))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
@@ -138,7 +164,8 @@
                               (append (TeX-symbol-list)
                                       (mapcar (lambda (item)
                                                 (list (car item) 'LaTeX-arg-section))
-                                              LaTeX-section-list))))
+                                              LaTeX-section-list)
+                                      (company-auctex-get-LaTeX-font-list))))
 
 ;;;###autoload
 (defun company-auctex-macros (command &optional arg &rest ignored)
@@ -158,23 +185,23 @@
   (append LaTeX-math-list LaTeX-math-default))
 
 (defun company-auctex-symbol-candidates (prefix)
-  (all-completions prefix (mapcar 'cadr (company-auctex-math-all))))
+  (all-completions prefix (append (mapcar 'cadr (company-auctex-math-all))
+                                  (mapcar 'car (company-auctex-get-LaTeX-font-list t)))))
 
 (defun company-auctex-symbol-post-completion (candidate)
   (search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (if (texmathp)
-      (progn
-        (insert "\\" candidate)
-        (company-auctex-expand-args candidate (TeX-symbol-list)))
-    (progn
-      (insert "$\\" candidate "$")
-      (backward-char)
-      (company-auctex-expand-args candidate (TeX-symbol-list)))))
+      (insert "\\" candidate)
+    (insert "$\\" candidate "$")
+    (backward-char))
+  (company-auctex-expand-args
+   candidate
+   (append (TeX-symbol-list) (company-auctex-get-LaTeX-font-list t))))
 
 (defun company-auctex-symbol-annotation (candidate)
   (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
-        (if char (concat " " (char-to-string (decode-char 'ucs char))) nil)))
+    (and char (concat " " (char-to-string (decode-char 'ucs char))))))
 
 ;;;###autoload
 (defun company-auctex-symbols (command &optional arg &rest ignored)
@@ -207,12 +234,13 @@
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (let ((candidate
          (substring candidate (length company-auctex-environment-prefix))))
-    (yas-expand-snippet
-     (format "\\begin{%s}%s\n$0\n\\end{%s}"
-             candidate
-             (company-auctex-macro-snippet
-              (assoc-default candidate (LaTeX-environment-list)))
-             candidate))))
+    (company-auctex-with-yas
+      (yas-expand-snippet
+       (format "\\begin{%s}%s\n$0\n\\end{%s}"
+               candidate
+               (company-auctex-macro-snippet
+                (assoc-default candidate (LaTeX-environment-list)))
+               candidate)))))
 
 ;;;###autoload
 (defun company-auctex-environments (command &optional arg &rest ignored)
