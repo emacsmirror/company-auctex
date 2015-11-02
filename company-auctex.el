@@ -128,6 +128,16 @@
        (add-hook 'yas-after-exit-snippet-hook #'company-auctex--disable-yas))
      ,@body))
 
+(defun company-auctex-get-LaTeX-font-list ()
+  (delq nil (mapcar
+             (lambda (x)
+               (and (stringp x)
+                    (not (string-empty-p x))
+                    (not (string= x "}"))
+                    (substring x 1 -1)))
+             (apply 'append
+                    (delete-dups (mapcar #'cdr LaTeX-font-list))))))
+
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
     (apply 'concat
@@ -139,10 +149,12 @@
     (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env)))))
 
 (defun company-auctex-macro-candidates (prefix)
-  (let ((comlist (mapcar (lambda (item) (car-or (car item)))
-                         (append (TeX-symbol-list)
-                                 (LaTeX-length-list)
-                                 LaTeX-section-list))))
+  (let ((comlist (append
+                  (mapcar (lambda (item) (car-or (car item)))
+                          (append (TeX-symbol-list)
+                                  (LaTeX-length-list)
+                                  LaTeX-section-list))
+                  (company-auctex-get-LaTeX-font-list))))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
