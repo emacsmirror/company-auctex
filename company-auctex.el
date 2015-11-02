@@ -134,7 +134,7 @@
                (and (stringp x)
                     (not (string-empty-p x))
                     (not (string= x "}"))
-                    (substring x 1 -1)))
+                    (list (substring x 1 -1) t)))
              (delete-dups
               (mapcar (if mathp
                           (lambda (x) (nth 3 x))
@@ -152,12 +152,11 @@
     (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env)))))
 
 (defun company-auctex-macro-candidates (prefix)
-  (let ((comlist (append
-                  (mapcar (lambda (item) (car-or (car item)))
-                          (append (TeX-symbol-list)
-                                  (LaTeX-length-list)
-                                  LaTeX-section-list))
-                  (company-auctex-get-LaTeX-font-list))))
+  (let ((comlist (mapcar (lambda (item) (car-or (car item)))
+                         (append (TeX-symbol-list)
+                                 (LaTeX-length-list)
+                                 LaTeX-section-list
+                                 (company-auctex-get-LaTeX-font-list)))))
     (all-completions prefix comlist)))
 
 (defun company-auctex-macro-post-completion (candidate)
@@ -165,7 +164,8 @@
                               (append (TeX-symbol-list)
                                       (mapcar (lambda (item)
                                                 (list (car item) 'LaTeX-arg-section))
-                                              LaTeX-section-list))))
+                                              LaTeX-section-list)
+                                      (company-auctex-get-LaTeX-font-list))))
 
 ;;;###autoload
 (defun company-auctex-macros (command &optional arg &rest ignored)
@@ -186,23 +186,22 @@
 
 (defun company-auctex-symbol-candidates (prefix)
   (all-completions prefix (append (mapcar 'cadr (company-auctex-math-all))
-                                  (company-auctex-get-LaTeX-font-list t))))
+                                  (mapcar 'car (company-auctex-get-LaTeX-font-list t)))))
 
 (defun company-auctex-symbol-post-completion (candidate)
   (search-backward candidate)
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (if (texmathp)
-      (progn
-        (insert "\\" candidate)
-        (company-auctex-expand-args candidate (TeX-symbol-list)))
-    (progn
-      (insert "$\\" candidate "$")
-      (backward-char)
-      (company-auctex-expand-args candidate (TeX-symbol-list)))))
+      (insert "\\" candidate)
+    (insert "$\\" candidate "$")
+    (backward-char))
+  (company-auctex-expand-args
+   candidate
+   (append (TeX-symbol-list) (company-auctex-get-LaTeX-font-list t))))
 
 (defun company-auctex-symbol-annotation (candidate)
   (let ((char (nth 2 (assoc candidate (mapcar 'cdr (company-auctex-math-all))))))
-        (if char (concat " " (char-to-string (decode-char 'ucs char))) nil)))
+    (and char (concat " " (char-to-string (decode-char 'ucs char))))))
 
 ;;;###autoload
 (defun company-auctex-symbols (command &optional arg &rest ignored)
