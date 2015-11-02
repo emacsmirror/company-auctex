@@ -128,15 +128,18 @@
        (add-hook 'yas-after-exit-snippet-hook #'company-auctex--disable-yas))
      ,@body))
 
-(defun company-auctex-get-LaTeX-font-list ()
+(defun company-auctex-get-LaTeX-font-list (&optional mathp)
   (delq nil (mapcar
              (lambda (x)
                (and (stringp x)
                     (not (string-empty-p x))
                     (not (string= x "}"))
                     (substring x 1 -1)))
-             (apply 'append
-                    (delete-dups (mapcar #'cdr LaTeX-font-list))))))
+             (delete-dups
+              (mapcar (if mathp
+                          (lambda (x) (nth 3 x))
+                        #'cadr)
+                      LaTeX-font-list)))))
 
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
@@ -182,7 +185,8 @@
   (append LaTeX-math-list LaTeX-math-default))
 
 (defun company-auctex-symbol-candidates (prefix)
-  (all-completions prefix (mapcar 'cadr (company-auctex-math-all))))
+  (all-completions prefix (append (mapcar 'cadr (company-auctex-math-all))
+                                  (company-auctex-get-LaTeX-font-list t))))
 
 (defun company-auctex-symbol-post-completion (candidate)
   (search-backward candidate)
