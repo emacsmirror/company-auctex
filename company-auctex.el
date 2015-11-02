@@ -117,6 +117,17 @@
 ;; Macros
 ;;
 
+(defun company-auctex--disable-yas ()
+  (yas-minor-mode -1)
+  (remove-hook 'yas-after-exit-snippet-hook #'company-auctex--disable-yas))
+
+(defmacro company-auctex-with-yas (&rest body)
+  `(progn
+     (unless yas-minor-mode
+       (yas-minor-mode +1)
+       (add-hook 'yas-after-exit-snippet-hook #'company-auctex--disable-yas))
+     ,@body))
+
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
     (apply 'concat
@@ -124,7 +135,8 @@
                  collect (company-auctex-snippet-arg item)))))
 
 (defun company-auctex-expand-args (str env)
-  (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env))))
+  (company-auctex-with-yas
+    (yas-expand-snippet (company-auctex-macro-snippet (assoc-default str env)))))
 
 (defun company-auctex-macro-candidates (prefix)
   (let ((comlist (mapcar (lambda (item) (car-or (car item)))
@@ -207,12 +219,13 @@
   (delete-region (1- (match-beginning 0)) (match-end 0))
   (let ((candidate
          (substring candidate (length company-auctex-environment-prefix))))
-    (yas-expand-snippet
-     (format "\\begin{%s}%s\n$0\n\\end{%s}"
-             candidate
-             (company-auctex-macro-snippet
-              (assoc-default candidate (LaTeX-environment-list)))
-             candidate))))
+    (company-auctex-with-yas
+      (yas-expand-snippet
+       (format "\\begin{%s}%s\n$0\n\\end{%s}"
+               candidate
+               (company-auctex-macro-snippet
+                (assoc-default candidate (LaTeX-environment-list)))
+               candidate)))))
 
 ;;;###autoload
 (defun company-auctex-environments (command &optional arg &rest ignored)
