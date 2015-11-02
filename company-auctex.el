@@ -132,7 +132,7 @@
   (delq nil (mapcar
              (lambda (x)
                (and (stringp x)
-                    (not (string-empty-p x))
+                    (not (string= x ""))
                     (not (string= x "}"))
                     (list (substring x 1 -1) t)))
              (delete-dups
