@@ -33,6 +33,7 @@
 (require 'latex)
 (require 'company)
 (require 'yasnippet)
+(eval-when-compile (require 'cl-lib))
 
 (defvar company-auctex-arg-lookup-table
   '((TeX-arg-define-macro . ("\\MacroName"))
@@ -88,15 +89,15 @@
     (if arg (cdr arg) '(""))))
 
 (defun company-auctex-expand-arg-info (arg-info)
-  (loop for item in arg-info
-        append (cond
-                ((or (stringp item) (and (vectorp item) (stringp (elt item 0))))
-                 (list item))
-                ((vectorp item)
-                 (loop for item-2 in (company-auctex-lookup-arg (elt item 0))
-                       collect [item-2]))
-                (t
-                 (company-auctex-lookup-arg item)))))
+  (cl-loop for item in arg-info
+           append (cond
+                   ((or (stringp item) (and (vectorp item) (stringp (elt item 0))))
+                    (list item))
+                   ((vectorp item)
+                    (cl-loop for item-2 in (company-auctex-lookup-arg (elt item 0))
+                             collect [item-2]))
+                   (t
+                    (company-auctex-lookup-arg item)))))
 
 (defun company-auctex-snippet-arg (arg)
   (let* ((opt (vectorp arg))
@@ -144,8 +145,8 @@
 (defun company-auctex-macro-snippet (arg-info)
   (let ((count 1))
     (apply 'concat
-           (loop for item in (company-auctex-expand-arg-info arg-info)
-                 collect (company-auctex-snippet-arg item)))))
+           (cl-loop for item in (company-auctex-expand-arg-info arg-info)
+                    collect (company-auctex-snippet-arg item)))))
 
 (defun company-auctex-expand-args (str env)
   (company-auctex-with-yas
@@ -171,7 +172,7 @@
 (defun company-auctex-macros (command &optional arg &rest ignored)
   "company-auctex-macros backend"
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-auctex-macros))
     (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
     (candidates (company-auctex-macro-candidates arg))
@@ -207,7 +208,7 @@
 (defun company-auctex-symbols (command &optional arg &rest ignored)
   "company-auctex-symbols backend"
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-auctex-symbols))
     (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
     (candidates (company-auctex-symbol-candidates arg))
@@ -246,7 +247,7 @@
 (defun company-auctex-environments (command &optional arg &rest ignored)
   "company-auctex-environments backend"
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-auctex-environments))
     (prefix (company-auctex-prefix "\\\\\\([a-zA-Z]*\\)\\="))
     (candidates (company-auctex-environment-candidates arg))
@@ -263,7 +264,7 @@
 (defun company-auctex-labels (command &optional arg &rest ignored)
   "company-auctex-labels backend"
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-auctex-labels))
     (prefix (company-auctex-prefix "\\\\ref{\\([^}]*\\)\\="))
     (candidates (company-auctex-label-candidates arg))))
@@ -279,7 +280,7 @@
 (defun company-auctex-bibs (command &optional arg &rest ignored)
   "company-auctex-bibs backend"
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (interactive (company-begin-backend 'company-auctex-bibs))
     (prefix (company-auctex-prefix "\\\\cite[^[{]*\\(?:\\[[^]]*\\]\\)?{\\([^},]*\\)\\="))
     (candidates (company-auctex-bib-candidates arg))))
