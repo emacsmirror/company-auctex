@@ -4,6 +4,8 @@ This is a group of backends for [company-mode](https://github.com/company-mode/c
 
 It is adapted from [auto-complete-auctex](https://github.com/monsanto/auto-complete-auctex/).
 
+**Please note that I am currently not using Emacs for LaTeX and therefore not maintaining this actively. Pull requests accepted.**
+
 ## Installation
 
 1. From MELPA (see http://melpa.org/#/getting-started for enabling it, if required):
