@@ -109,11 +109,9 @@
 
 (defun company-auctex-prefix (regexp)
   "Returns the prefix for matching given REGEXP."
-  (let ((prefix (and (derived-mode-p 'latex-mode)
-                     (when (looking-back regexp)
-                       (match-string-no-properties 1)))))
-    (if prefix (cons prefix t) nil)))
-
+  (and (derived-mode-p 'latex-mode)
+       (when (looking-back regexp)
+         (match-string-no-properties 1))))
 
 ;; Macros
 ;;
