@@ -264,7 +264,7 @@
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-auctex-labels))
-    (prefix (company-auctex-prefix "\\\\ref{\\([^}]*\\)\\="))
+    (prefix (company-auctex-prefix "\\\\\\(?:eq\\|auto\\)?ref{\\([^}]*\\)\\="))
     (candidates (company-auctex-label-candidates arg))))
 
 
